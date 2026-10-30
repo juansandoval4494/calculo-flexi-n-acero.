@@ -31,16 +31,31 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Cargar catálogo de perfiles
+# Cargar catálogo de perfiles (compatible con raíz o data/)
 @st.cache_data
 def load_profiles():
-    csv_path = os.path.join(current_dir, 'data', 'profiles.csv')
-    if os.path.exists(csv_path):
-        return pd.read_csv(csv_path)
-    else:
-        # Generar catálogo si no existe
+    # Buscar en raíz o en carpeta data/
+    paths_to_check = [
+        os.path.join(current_dir, 'profiles.csv'),
+        os.path.join(current_dir, 'data', 'profiles.csv'),
+        'profiles.csv',
+        'data/profiles.csv'
+    ]
+    for p in paths_to_check:
+        if os.path.exists(p):
+            return pd.read_csv(p)
+            
+    # Si por alguna razón no está el archivo, intentar importarlo de forma segura
+    try:
         from src.catalog_builder import create_ahmsa_database
         return create_ahmsa_database()
+    except Exception:
+        try:
+            from catalog_builder import create_ahmsa_database
+            return create_ahmsa_database()
+        except Exception as e:
+            st.error(f"No se encontró profiles.csv. Asegúrate de subir el archivo 'profiles.csv' a tu repositorio de GitHub.")
+            st.stop()
 
 df_profiles = load_profiles()
 designer = SteelBeamDesigner()

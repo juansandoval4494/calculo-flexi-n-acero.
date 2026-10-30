@@ -11,11 +11,18 @@ import matplotlib.pyplot as plt
 import os
 import sys
 
-# Agregar carpeta src al path
+# Agregar carpeta raíz y carpeta src al path de Python para Streamlit Cloud
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
-    sys.path.append(current_dir)
-from src.engine import SteelBeamDesigner
+    sys.path.insert(0, current_dir)
+src_dir = os.path.join(current_dir, 'src')
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
+
+try:
+    from src.engine import SteelBeamDesigner
+except ModuleNotFoundError:
+    from engine import SteelBeamDesigner
 
 st.set_page_config(
     page_title="SteelBeam Designer - AISC LRFD",
